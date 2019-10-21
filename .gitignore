@@ -109,7 +109,8 @@ venv.bak/
 # Visual Studio
 .vs/
 
-# Tests
+# Dumps
+dumps/
 *.json
 
 # Zappa
