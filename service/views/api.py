@@ -116,12 +116,7 @@ class ConvertApiView(RestfulView):
             return self.api_results(self.INVALID_URL, 'Invalid URL')
 
         ydl_opts = {
-            'format': 'all',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp4',
-                'preferredquality': '192',
-            }],
+            'format': 'all'
         }
 
         data = {
