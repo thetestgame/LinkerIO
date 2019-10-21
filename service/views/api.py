@@ -135,9 +135,6 @@ class ConvertApiView(RestfulView):
             with YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(url, download=False)
 
-                with open('test.json', 'w') as f:
-                    f.write(json.dumps(info_dict, indent=4))
-
                 # Parse base data
                 data['title'] = info_dict.get('title', None)
                 data['image'] = info_dict.get('thumbnail', None)
