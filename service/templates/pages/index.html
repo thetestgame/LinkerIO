@@ -194,7 +194,15 @@
                         //  Populate formats
                         var formats = data['formats'];
                         formats.forEach(function(format) {
-                            var size = humanFileSize(format['size']);
+
+                            // Get and verify size
+                            var size = format['size'];
+                            if (size == 0 || size == undefined || size == null) {
+                                return;
+                            }
+                            size = humanFileSize(format['size']);
+
+                            // Format type
                             var type = format['ext'];
                             var note = format['note'];
                             if (note != undefined) {
