@@ -57,14 +57,27 @@
             <div class="col">
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" id="video-tab" data-toggle="tab" href="#video" role="tab" aria-controls="video" aria-selected="true">Video</a>
+                        <a class="nav-link active" id="video-audio-tab" data-toggle="tab" href="#video-audio" role="tab" aria-controls="video-audio" aria-selected="true">Video & Audio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="audio-tab" data-toggle="tab" href="#audio" role="tab" aria-controls="audio" aria-selected="false">Audio</a>
+                        <a class="nav-link" id="video-tab" data-toggle="tab" href="#video" role="tab" aria-controls="video" aria-selected="true">Video Only</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="audio-tab" data-toggle="tab" href="#audio" role="tab" aria-controls="audio" aria-selected="false">Audio Only</a>
                     </li>
                 </ul>
                 <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="video" role="tabpanel" aria-labelledby="video-tab">
+                    <div class="tab-pane fade show active" id="video-audio" role="tabpanel" aria-labelledby="video-audio-tab">
+                        <table class="table">
+                            <thead>
+                                <th scope="col">File Type</th>
+                                <th scope="col">File Size</th>
+                                <th scope="col">Download</th>
+                            </thead>
+                            <tbody id="video-audio-list"></tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade show" id="video" role="tabpanel" aria-labelledby="video-tab">
                         <table class="table">
                             <thead>
                                 <th scope="col">File Type</th>
@@ -107,6 +120,7 @@
     var message = $("#message");
     var audio_list = $("#audio-list");
     var video_list = $("#video-list");
+    var video_audio_list = $("#video-audio-list");
     var video_details = $("#video-details");
 
     function humanFileSize(bytes, si) {
@@ -181,14 +195,28 @@
                         formats.forEach(function(format) {
                             var size = humanFileSize(format['size']);
                             var type = format['ext'];
-                            var button = '<a href="' + format['url'] + '" class="btn btn-primary" role="button">Download</a>';
-
-                            var details = '<tr><td>' + type +'</td><td>' + size + "</td><td>" + button + "</td></tr>";
-                            if (format['audio']) {
-                                audio_list.append(details);
-                            } else {
-                                video_list.append(details);
+                            var note = format['note'];
+                            if (note != undefined) {
+                                type += ' (' + note + ')';
                             }
+
+                            // Determine placement table
+                            var table = null;
+                            var has_audio = format['has-audio'];
+                            var has_video = format['has-video'];
+
+                            if (has_audio && has_video) {
+                                table = video_audio_list;   
+                            } else if (has_video) {
+                                table = video_list;
+                            } else if (has_audio) {
+                                table = audio_list;
+                            }
+
+                            // Add row
+                            var button = '<a href="' + format['url'] + '" class="btn btn-primary" role="button">Download</a>';
+                            var details = '<tr><td>' + type +'</td><td>' + size + "</td><td>" + button + "</td></tr>";
+                            table.append(details);
                         });
 
                         console.log('Displaying results');

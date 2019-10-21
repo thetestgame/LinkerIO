@@ -26,6 +26,7 @@ SOFTWARE.
 import re
 import json
 import logging
+import traceback
 from youtube_dl import YoutubeDL
 
 import flask
@@ -48,6 +49,7 @@ class RestfulView(MethodView):
     """
 
     INVALID_METHOD = 405
+    INTERNAL_ERROR = 500
 
     def __default_response(self):
         """
@@ -133,6 +135,9 @@ class ConvertApiView(RestfulView):
             with YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(url, download=False)
 
+                with open('test.json', 'w') as f:
+                    f.write(json.dumps(info_dict, indent=4))
+
                 # Parse base data
                 data['title'] = info_dict.get('title', None)
                 data['image'] = info_dict.get('thumbnail', None)
@@ -143,8 +148,14 @@ class ConvertApiView(RestfulView):
                 for format_info in formats:
                     result_info = {}
 
+                    acodec = format_info.get('acodec', 'none')
+                    vcodec = format_info.get('vcodec', 'none')
+
+                    result_info['has-audio'] = acodec != 'none'
+                    result_info['has-video'] = vcodec != 'none'
+
                     format_string = format_info.get('format', '')
-                    result_info['audio'] = 'audio only' in format_string
+                    result_info['format'] = format_string
                     result_info['url'] = format_info.get('url', None)
                     result_info['ext'] = format_info.get('ext', None)
                     result_info['note'] = format_info.get('format_note', None)
@@ -152,7 +163,8 @@ class ConvertApiView(RestfulView):
 
                     data['formats'].append(result_info)
         except:
-            pass
+            logging.error(traceback.format_exc())
+            return self.api_results(code=self.INTERNAL_ERROR, message='An internal error has occured')
 
         # Check for valid results
         if len(data['formats']) == 0:
