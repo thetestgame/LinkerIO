@@ -1,0 +1,23 @@
+{
+    "dev": {
+        "s3_bucket": "media-download-dev-us-east-1",
+        "app_function": "service.wsgi.app",
+        "environment_variables": {
+            "ENVIRONMENT": "dev"
+        }
+    },
+    "test": {
+        "s3_bucket": "media-download-test-us-east-1",
+        "app_function": "service.wsgi.app",
+        "environment_variables": {
+            "ENVIRONMENT": "test"
+        }
+    },
+    "prod": {
+        "s3_bucket": "media-download-prod-us-east-1",
+        "app_function": "service.wsgi.app",
+        "environment_variables": {
+            "ENVIRONMENT": "prod"
+        }
+    }
+}

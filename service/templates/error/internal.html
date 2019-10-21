@@ -1,0 +1,47 @@
+{# 
+ * MIT License
+ * 
+ * Copyright (c) 2019 Jordan Maxwell
+ * Written 10/20/2019
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+#}
+    
+{# Page libraries #}
+{% extends "layout/default.html" %}
+
+{# Page Title #}
+{% block title %}{{errorcode}}{% endblock %}
+
+{# Page Navbar #}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-light rounded-0">
+    <a class="navbar-brand" href="#"><h2>Internal Error</h2></a>
+</nav>
+{% endblock %}
+
+{# Page Content #}
+{% block content %}
+    {{super()}}
+    <div id="error-body" class="m-5">
+        <h2 class="m-0 p-0">An Internal Error has occured: {{errorname}}</h2><br/>
+        <h3 class="m-0 p-0">{{errormsg}}</h3><br>
+        <div id="traceback" class="m-0 bg-light border-5 p-5 h3">{{traceback|safe}}</div>
+    </div>
+{% endblock %}

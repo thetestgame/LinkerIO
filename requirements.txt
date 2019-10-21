@@ -1,0 +1,12 @@
+pytz
+zappa
+tornado
+arrow
+boto3
+watchtower
+youtube_dl
+flask
+flask-debugtoolbar
+flask-s3
+Bootstrap-Flask
+cloudwatch-fluent-metrics

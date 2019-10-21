@@ -1,0 +1,204 @@
+{# 
+ * MIT License
+ * 
+ * Copyright (c) 2019 Jordan Maxwell
+ * Written 10/18/2019
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+#}
+
+{# Page libraries #}
+{% extends "layout/default.html" %}
+
+{# Content #}
+{% block content %}
+<div id="main" class="container-fluid p-5 text-center">
+
+    <!-- Converter -->
+    <h1 class="mb-5">Linkify.io</h1>
+    <h2>Download Video and Audio from a URL</h2>
+    <form action="/api/convert" method="post" id="convert-form">
+        <div class="input-group">
+            <input name='url' id="url" type="text" class="form-control">
+            <span class="input-group-btn">
+                <button id="start" class="btn btn-primary" type="button">Start</button>
+            </span>
+        </div>
+    </form>
+    <small>By using our service you are accepting our <a href="#">terms of use.</a></small>
+    <div id="message"></div>
+    <div id="results" class="container" style="display:none">
+        <h3 id="video-title"></h3>
+        <div class="row">
+            <div class="col">
+                <img id="thumbnail" class="w-100">
+                <div class="container">
+                    <table class="table border mt-2">
+                        <tbody id="video-details"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="video-tab" data-toggle="tab" href="#video" role="tab" aria-controls="video" aria-selected="true">Video</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="audio-tab" data-toggle="tab" href="#audio" role="tab" aria-controls="audio" aria-selected="false">Audio</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="video" role="tabpanel" aria-labelledby="video-tab">
+                        <table class="table">
+                            <thead>
+                                <th scope="col">File Type</th>
+                                <th scope="col">File Size</th>
+                                <th scope="col">Download</th>
+                            </thead>
+                            <tbody id="video-list"></tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="audio" role="tabpanel" aria-labelledby="audio-tab">
+                        <div class="tab-pane active" id="audio-tab">
+                            <table class="table">
+                                <thead>
+                                    <th scope="col">File Type</th>
+                                    <th scope="col">File Size</th>
+                                    <th scope="col">Download</th>
+                                </thead>
+                                <tbody id="audio-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Ad -->
+    <img src="https://via.placeholder.com/468x60?text=468x60+Full+Banner" class="mt-5 w-100"/>
+</div>
+{% endblock %}
+
+{# Page Javascript #}
+{% block javascript %}
+<script type="text/javascript">
+    //Hostname
+    var host = window.location.href;
+
+    // Elements
+    var results = $("#results");
+    var message = $("#message");
+    var audio_list = $("#audio-list");
+    var video_list = $("#video-list");
+    var video_details = $("#video-details");
+
+    function humanFileSize(bytes, si) {
+        var thresh = si ? 1000 : 1024;
+        if(Math.abs(bytes) < thresh) {
+            return bytes + ' B';
+        }
+        var units = si
+            ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+            : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+        var u = -1;
+        do {
+            bytes /= thresh;
+            ++u;
+        } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+        return bytes.toFixed(1)+' '+units[u];
+    }
+
+    function humanDuration(seconds) {
+        var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+        var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+        var numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
+        return numhours + ":" + numminutes + ":" + numseconds;
+    }
+
+    // Prepare host string
+    host = host.replace('#', '');
+    if (!host.endsWith('/')) {
+        host = host + '/';
+    }
+
+    // Process convert
+    $("#start").click(function () {
+        var url = $("#url").val();
+        if (!url.startsWith('http')) {
+            url = "https://" + url;
+        }
+        console.log(host + 'api/convert');
+        $.ajax({
+            url:  host + 'api/convert',
+            type: 'post',
+            data: {  'url': url },
+            success: function(resp) {
+                console.log(resp);
+
+                var code = resp['code'];
+                var data = resp['data'];
+
+                if (code != undefined) {
+                    if (code != 200) {
+                        results.hide();
+                        message.html("<div class='alert alert-danger mt-2'><h3>" + resp['message'] + "</h3></div>");
+                    } else {
+                        message.html("<div class='alert alert-info mt-2'><h3>" + resp['message'] + "</h3></div>");
+
+                        // Reset fields
+                        video_details.html('');
+                        video_list.html('');
+                        audio_list.html('');
+
+                        // Populate details
+                        $("#video-title").text(data['title']);
+                        $("#thumbnail").attr('src', data['image']);
+
+                        var duration = humanDuration(data['duration']);
+                        video_details.append('<tr><td>Title</td><td>' + data['title'] + "</td></tr>");
+                        video_details.append("<tr><td>Duration</td><td>" + duration + "</td></tr>");
+                        video_details.append("<tr><td>Thumbnail URL</td><td>" + data['image'] + "</td></tr>");
+
+                        //  Populate formats
+                        var formats = data['formats'];
+                        formats.forEach(function(format) {
+                            var size = humanFileSize(format['size']);
+                            var type = format['ext'];
+                            var button = '<a href="' + format['url'] + '" class="btn btn-primary" role="button">Download</a>';
+
+                            var details = '<tr><td>' + type +'</td><td>' + size + "</td><td>" + button + "</td></tr>";
+                            if (format['audio']) {
+                                audio_list.append(details);
+                            } else {
+                                video_list.append(details);
+                            }
+                        });
+
+                        console.log('Displaying results');
+                        results.show();
+                    }
+                } else {
+                    message.html("<div class='alert alert-danger mt-2'><h3>An unexpected error has occured</h3></div>");
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
