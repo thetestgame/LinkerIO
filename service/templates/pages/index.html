@@ -31,7 +31,7 @@
 <div id="main" class="container-fluid p-5 text-center">
 
     <!-- Converter -->
-    <h1 class="mb-5">Linkify.io</h1>
+    <h1 class="mb-2">Linkify.io</h1>
     <h2>Download Video and Audio from a URL</h2>
     <form action="/api/convert" method="post" id="convert-form">
         <div class="input-group">
@@ -45,6 +45,7 @@
     <div id="message"></div>
     <div id="results" class="container" style="display:none">
         <h3 id="video-title"></h3>
+        <b>Right click the download link and click "Save Link as..."</b>
         <div class="row">
             <div class="col">
                 <img id="thumbnail" class="w-100">
@@ -172,9 +173,10 @@
                 if (code != undefined) {
                     if (code != 200) {
                         results.hide();
+                        message.show();
                         message.html("<div class='alert alert-danger mt-2'><h3>" + resp['message'] + "</h3></div>");
                     } else {
-                        message.html("<div class='alert alert-info mt-2'><h3>" + resp['message'] + "</h3></div>");
+                        message.hide();
 
                         // Reset fields
                         video_details.html('');
