@@ -30,7 +30,7 @@ import traceback
 from youtube_dl import YoutubeDL
 
 import flask
-from flask import render_template, jsonify
+from flask import render_template, jsonify, current_app
 from flask.views import MethodView
 
 from service.decorators import view
@@ -102,6 +102,20 @@ class ConvertApiView(RestfulView):
 
         return re.match(url_regex, url) is not None
 
+    def __attempt_dump_request(self, request):
+        """
+        Dumps the youtube_dl request dictionary if configured
+        """
+
+        # Dump data if configured
+        config = current_app.config
+        if not config.get('DUMP_YOUTUBE_DL_REQUESTS', False):
+            return
+
+        logging.info('Dumping request')
+        with open('request-dump.json', 'w') as f:
+            f.write(json.dumps(request, indent=4))
+
     def post(self):
         """
         Handles all POST requests
@@ -130,6 +144,16 @@ class ConvertApiView(RestfulView):
             with YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(url, download=False)
 
+                # Attempt to dump data
+                self.__attempt_dump_request(info_dict)
+
+                # Check if live
+                config = current_app.config
+                live = info_dict.get('is_live', False)
+                if live and config.get('ALLOW_LIVE_CONVERTS', False):
+                    return self.api_results(self.INVALID_URL, 'Live video converts not allowed')
+                data['live'] = live
+
                 # Parse base data
                 data['title'] = info_dict.get('title', None)
                 data['image'] = info_dict.get('thumbnail', None)
@@ -137,6 +161,7 @@ class ConvertApiView(RestfulView):
 
                 # Parse formats
                 formats = info_dict.get('formats', [])
+                max_size = 0
                 for format_info in formats:
                     result_info = {}
 
@@ -151,9 +176,17 @@ class ConvertApiView(RestfulView):
                     result_info['url'] = format_info.get('url', None)
                     result_info['ext'] = format_info.get('ext', None)
                     result_info['note'] = format_info.get('format_note', None)
-                    result_info['size'] = format_info.get('filesize', None)
+
+                    size = format_info.get('filesize', 0)
+                    result_info['size'] = size
+                    if size > max_size:
+                        max_size = size
 
                     data['formats'].append(result_info)
+                
+                # Check if a valid video was found
+                if max_size <= 0:
+                    return self.api_results(code=self.INVALID_URL, message='No videos found at the URL')
         except:
             logging.error(traceback.format_exc())
             return self.api_results(code=self.INTERNAL_ERROR, message='An internal error has occured')

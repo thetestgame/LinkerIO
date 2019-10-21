@@ -82,3 +82,7 @@ class Config(object):
 
     # S3
     FLASKS3_BUCKET_NAME = 'magicurl-cdn-us-east-1'
+
+    # API
+    DUMP_YOUTUBE_DL_REQUESTS = False
+    ALLOW_LIVE_CONVERTS = False
