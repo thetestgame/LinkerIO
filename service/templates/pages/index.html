@@ -187,9 +187,8 @@
                         $("#thumbnail").attr('src', data['image']);
 
                         var duration = humanDuration(data['duration']);
-                        video_details.append('<tr><td>Title</td><td>' + data['title'] + "</td></tr>");
-                        video_details.append("<tr><td>Duration</td><td>" + duration + "</td></tr>");
-                        video_details.append("<tr><td>Thumbnail URL</td><td>" + data['image'] + "</td></tr>");
+                        video_details.append('<tr><td>Duration</td><td>' + duration + '</td></tr>');
+                        video_details.append('<tr><td>Thumbnail URL</td><td><a href="' + data['image'] + '">Link</a></td></tr>');
 
                         //  Populate formats
                         var formats = data['formats'];
