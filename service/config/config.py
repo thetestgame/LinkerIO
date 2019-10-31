@@ -81,7 +81,7 @@ class Config(object):
     LOG_METRICS = False
 
     # S3
-    FLASKS3_BUCKET_NAME = 'magicurl-cdn-us-east-1'
+    FLASKS3_BUCKET_NAME = 'linker-cdn-us-east-1'
 
     # API
     DUMP_YOUTUBE_DL_REQUESTS = False
